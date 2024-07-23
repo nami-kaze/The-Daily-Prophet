@@ -1,74 +1,120 @@
-// src/components/PomodoroTimer/PomodoroTimer.js
-import React, { useState, useEffect } from 'react';
-import './PomodoroTimer.css'; // Import the main CSS file
-import './PomodoroTimerDarkMode.css'; // Import the dark mode CSS file
+import './PomodoroTimer.css';
+import Header from './Header/header'
+import Controls from './Controls/controls'
+import TimerDisplay from './TimerDisplay/timerdisplay'
+import Button from './Button/button'
+import Settings from './Settings/settings'
+import { useState, useEffect } from 'react';
+import useSound from 'use-sound'
+import timesUpSfx from './sounds/timesUp.mp3'
 
-const PomodoroTimer = () => {
-  const [minutes, setMinutes] = useState(25);
-  const [seconds, setSeconds] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+
+function PomodoroTimer() {
+  const [ settingsVisible, setSettingsVisible ] = useState(false)
+  const [ timerMode, setTimerMode ] = useState('pomo')   // options: pomo, short, long
+  const [ pomoLength, setPomoLength ] = useState(25)
+  const [ shortLength, setShortLength ] = useState(3)
+  const [ longLength, setLongLength ] = useState(15)
+  const [ fontPref, setFontPref ] = useState('kumbh')         // options: kumbh, roboto, space
+  const [ accentColor, setAccentColor ] = useState('default') // options: default, blue, purple
+  const [ secondsLeft, setSecondsLeft] = useState(pomoLength * 60)
+  const [ isActive, setIsActive ] = useState(false)
+  const [ buttonText, setButtonText ] = useState('START')
+
+  const [ volume, setVolume ] = useState(1)
+  const [ timesUp ] = useSound(timesUpSfx, {
+                                volume: volume,
+                              })
 
   useEffect(() => {
-    let timer;
-    if (isPlaying) {
-      timer = setInterval(() => {
-        setSeconds(prevSeconds => {
-          if (prevSeconds > 0) {
-            return prevSeconds - 1;
-          } else if (minutes > 0) {
-            setMinutes(prevMinutes => prevMinutes - 1);
-            return 59;
-          } else {
-            clearInterval(timer);
-            setIsPlaying(false);
-            return 0;
-          }
-        });
-      }, 1000);
-    }
-    return () => clearInterval(timer);
-  }, [isPlaying, minutes]);
+    if(isActive) {
+      const interval = setInterval(() => {
+        setSecondsLeft(secondsLeft => secondsLeft - 1)
+      }, 1000)
+    
+      if(secondsLeft === 0) {
+        clearInterval(interval)
+        setIsActive(false)
+        setButtonText('')
+        timesUp()
+      }
 
-  const handlePlay = () => setIsPlaying(true);
-  const handleStop = () => {
-    setIsPlaying(false);
-    setMinutes(25);
-    setSeconds(0);
-  };
-  const handleDarkModeToggle = () => setIsDarkMode(prevMode => !prevMode);
+      return () => clearInterval(interval)
+    }
+    
+  }, [isActive, secondsLeft, timesUp]);
+
+
+  const toggleSettingsVisibility = (event) => {
+    setSettingsVisible(!settingsVisible)
+  }
+
+  const formatTimeLeft = (seconds) => {
+    return(`${Math.floor(seconds / 60)}:${
+            (seconds % 60 > 9)
+              ? seconds % 60
+              : '0' + seconds % 60
+          }`)
+  }
+
+  const calcPercentage = () => {
+    if(timerMode === 'pomo') {
+      return((secondsLeft / (pomoLength * 60)) * 100)
+    }
+    if(timerMode === 'short') {
+      return((secondsLeft / (shortLength * 60)) * 100)
+    }
+    if(timerMode === 'long') {
+      return((secondsLeft / (longLength * 60)) * 100)
+    }
+    
+  }
 
   return (
-    <div className={`container ${isDarkMode ? 'dark-mode' : ''}`}>
-      <button className={`off ${isDarkMode ? '' : 'hide'}`} id="off" onClick={handleDarkModeToggle}>
-        {/* Dark Mode Icon */}
-      </button>
-
-      <button className={`on ${isDarkMode ? 'hide' : ''}`} id="on" onClick={handleDarkModeToggle}>
-        {/* Light Mode Icon */}
-      </button>
-
-      <main>
-        <section>
-          <div className="time">
-            <span className="minutes" id="minutes">{minutes}</span>
-            <span>:</span>
-            <span className="seconds" id="seconds">{seconds < 10 ? `0${seconds}` : seconds}</span>
-          </div>
-
-          <div className="controls">
-            <button className="play" id="play" onClick={handlePlay}>
-              {/* Play Icon */}
-            </button>
-
-            <button className="stop" id="stop" onClick={handleStop}>
-              {/* Stop Icon */}
-            </button>
-          </div>
-        </section>
-      </main>
+    <div className="pomodoro-app">
+      <Header title="pomodoro" />
+      <Controls
+        timerMode={timerMode}
+        setTimerMode={setTimerMode}
+        setSecondsLeft={setSecondsLeft}
+        pomoLength={pomoLength}
+        shortLength={shortLength}
+        longLength={longLength}
+        setIsActive={setIsActive}
+        buttonText={buttonText}
+        setButtonText={setButtonText}
+        volume={volume}
+        />
+      <TimerDisplay
+        timerMode={timerMode}
+        percentage={calcPercentage()}
+        timeLeft={formatTimeLeft(secondsLeft)}
+        isActive={isActive}
+        setIsActive={setIsActive}
+        buttonText={buttonText}
+        setButtonText={setButtonText}
+        volume={volume}
+        setVolume={setVolume}
+        />
+      <Button type="settings" toggleVisibility={toggleSettingsVisibility} />
+      <Settings visible={settingsVisible}
+                toggleSettingsVisibility={toggleSettingsVisibility} 
+                pomoLength={pomoLength}
+                setPomoLength={setPomoLength}
+                shortLength={shortLength}
+                setShortLength={setShortLength}
+                longLength={longLength}
+                setLongLength={setLongLength}
+                fontPref={fontPref}
+                setFontPref={setFontPref}
+                accentColor={accentColor}
+                setAccentColor={setAccentColor}
+                closeSettings={toggleSettingsVisibility}
+                setSecondsLeft={setSecondsLeft}
+                timerMode={timerMode}
+                />
     </div>
   );
-};
+}
 
 export default PomodoroTimer;

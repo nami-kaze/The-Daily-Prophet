@@ -22,28 +22,42 @@ module.exports = {
                 exclude: /node_modules/,
             },
             {
-                test: /\.jsx?$/, // Add this rule for processing JavaScript/JSX files
+                test: /\.jsx?$/,
                 exclude: /node_modules/,
                 use: {
                     loader: "babel-loader",
                     options: {
-                        presets: ["@babel/preset-env", "@babel/preset-react"],
+                        presets: [
+                            "@babel/preset-env",
+                            [
+                                "@babel/preset-react",
+                                { runtime: "automatic" }
+                            ]
+                        ],
                     },
                 },
             },
             {
-                exclude: /node_modules/,
                 test: /\.css$/i,
                 use: [
                     "style-loader",
                     "css-loader"
-                ]
+                ],
+            },
+            {
+                test: /\.(mp3)$/,
+                use: {
+                    loader: "file-loader",
+                    options: {
+                        name: '[path][name].[ext]',
+                    },
+                },
             },
         ],
     },
     plugins: [
         new HTMLPlugin({
-            template: "./src/index.html", // Use the new index.html
+            template: "./src/index.html",
             filename: "index.html"
         }),
         new CopyPlugin({
@@ -53,7 +67,7 @@ module.exports = {
         }),
     ],
     resolve: {
-        extensions: [".tsx", ".ts", ".js", ".jsx"], // Add .jsx here
+        extensions: [".tsx", ".ts", ".js", ".jsx"],
     },
     output: {
         path: path.join(__dirname, "dist/js"),
