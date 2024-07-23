@@ -10,23 +10,34 @@ module.exports = {
     module: {
         rules: [
             {
-              test: /\.tsx?$/,
-               use: [
-                 {
-                  loader: "ts-loader",
-                   options: {
-                     compilerOptions: { noEmit: false },
+                test: /\.tsx?$/,
+                use: [
+                    {
+                        loader: "ts-loader",
+                        options: {
+                            compilerOptions: { noEmit: false },
+                        }
                     }
-                  }],
-               exclude: /node_modules/,
+                ],
+                exclude: /node_modules/,
             },
             {
-              exclude: /node_modules/,
-              test: /\.css$/i,
-               use: [
-                  "style-loader",
-                  "css-loader"
-               ]
+                test: /\.jsx?$/, // Add this rule for processing JavaScript/JSX files
+                exclude: /node_modules/,
+                use: {
+                    loader: "babel-loader",
+                    options: {
+                        presets: ["@babel/preset-env", "@babel/preset-react"],
+                    },
+                },
+            },
+            {
+                exclude: /node_modules/,
+                test: /\.css$/i,
+                use: [
+                    "style-loader",
+                    "css-loader"
+                ]
             },
         ],
     },
@@ -42,7 +53,7 @@ module.exports = {
         }),
     ],
     resolve: {
-        extensions: [".tsx", ".ts", ".js"],
+        extensions: [".tsx", ".ts", ".js", ".jsx"], // Add .jsx here
     },
     output: {
         path: path.join(__dirname, "dist/js"),
