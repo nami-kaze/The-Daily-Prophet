@@ -9,3 +9,25 @@
   background-color: green;
 
 }
+
+.main-one{
+  display: flex;
+  justify-content: space-around; /* Adjust as needed for spacing */
+  margin-top: 20px;
+}
+
+.main-one > div {
+  flex: 1;
+  margin: 0 10px; /* Adjust as needed for spacing between components */
+}
+
+.side-by-side {
+  display: flex;
+  justify-content: space-around; /* Adjust as needed for spacing */
+  margin-top: 20px; /* Adjust as needed for spacing */
+}
+
+.side-by-side > div {
+  flex: 1;
+  margin: 0 10px; /* Adjust as needed for spacing between components */
+}
